@@ -37,5 +37,5 @@ jobs:
         git-release-bot-name: "release-bot"
         git-release-bot-email: "jd.comment@gmail.com"
 
-        access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        access-token: "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"
 
