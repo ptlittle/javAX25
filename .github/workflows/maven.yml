@@ -43,4 +43,6 @@ jobs:
         git-release-bot-email: "release-bot@example.com"
 
         access-token: ${{ secrets.GITHUB_ACCESS_TOKEN }}
+        maven-args: "-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip"
+
 
