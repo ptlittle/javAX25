@@ -40,6 +40,7 @@ jobs:
         version: "v0.0.1"
         # New release description
         description: "Functional version"
+        repo: damico/javAX25
 
 
 
