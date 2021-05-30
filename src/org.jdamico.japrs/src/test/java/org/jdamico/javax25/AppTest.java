@@ -1,4 +1,4 @@
-package org.jdamico.japrs;
+package org.jdamico.javax25;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
