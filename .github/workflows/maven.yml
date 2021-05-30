@@ -37,6 +37,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_REPOSITORY: damico/javAX25
       with:
         files: /home/runner/work/javAX25/javAX25/staging/*.jar
 
