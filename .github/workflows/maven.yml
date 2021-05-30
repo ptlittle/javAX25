@@ -38,4 +38,6 @@ jobs:
         git-release-bot-email: "jd.comment@gmail.com"
 
         access-token: "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"
+        maven-args: "-Dmaven.javadoc.skip=true -DskipTests -DskipITs -Ddockerfile.skip -DdockerCompose.skip"
+
 
