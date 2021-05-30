@@ -40,7 +40,6 @@ jobs:
         GITHUB_REPOSITORY: damico/javAX25
       with:
         tag_name: v0.0.1
-        target_commitish: master
         files: /home/runner/work/javAX25/javAX25/staging/*.jar
 
 
