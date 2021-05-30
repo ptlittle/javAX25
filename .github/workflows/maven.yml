@@ -28,3 +28,10 @@ jobs:
       with:
         name: Package
         path: staging
+    - name: Download a Build Artifact
+      uses: actions/download-artifact@v2.0.9
+      with:
+        # Artifact name
+        name: javAx25_Action_Auto_Artifact
+        # Destination path
+        #path: # optional
