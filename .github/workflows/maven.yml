@@ -5,6 +5,7 @@ name: Java CI with Maven
 
 on:
   push:
+    tags: v0.0.1
     branches: [ master ]
   pull_request:
     branches: [ master ]
@@ -39,6 +40,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: damico/javAX25
       with:
+        tag_name: v0.0.1
+        target_commitish: master
         files: /home/runner/work/javAX25/javAX25/staging/*.jar
 
 
