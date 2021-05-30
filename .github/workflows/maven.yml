@@ -31,7 +31,7 @@ jobs:
         path: staging
     #- name: Download a Build Artifact
     #  uses: actions/download-artifact@v2.0.9
-        - name: Release
+    - name: Release
       uses: qcastel/github-actions-maven-release@master
       env:
         JAVA_HOME: "/opt/hostedtoolcache/Java_Adopt_jdk/11.0.11-9/x64"
