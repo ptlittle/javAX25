@@ -32,7 +32,7 @@ jobs:
     #- name: Download a Build Artifact
     #  uses: actions/download-artifact@v2.0.9
     - name: Release
-      uses: qcastel/github-actions-maven-release@master
+      uses: damico/github-actions-maven-release@master
       env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
