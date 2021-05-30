@@ -28,5 +28,7 @@ jobs:
       with:
         name: Package
         path: staging
-    - name: Download a Build Artifact
-      uses: actions/download-artifact@v2.0.9
+    #- name: Download a Build Artifact
+    #  uses: actions/download-artifact@v2.0.9
+    - name: Create Release
+      uses: ncipollo/release-action@v1.8.6
