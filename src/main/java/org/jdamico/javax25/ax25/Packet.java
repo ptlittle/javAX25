@@ -155,13 +155,13 @@ public class Packet {
 		}
 		
 		bytes[offset++] = (byte) control;
-		System.out.printf("control = %02x\n", bytes[offset-1]);
+		//System.out.printf("control = %02x\n", bytes[offset-1]);
 		bytes[offset++] = (byte) protocol;
-		System.out.printf("protocol = %02x\n", bytes[offset-1]);
+		//System.out.printf("protocol = %02x\n", bytes[offset-1]);
 		
 		for (int j=0; j<payload.length; j++) {
 			bytes[offset++] = payload[j];
-			System.out.printf("data = %02x\n", bytes[offset-1]);
+			//System.out.printf("data = %02x\n", bytes[offset-1]);
 			
 		}
 		
