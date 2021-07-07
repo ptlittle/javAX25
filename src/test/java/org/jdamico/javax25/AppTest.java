@@ -5,7 +5,7 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Properties;
 
-import org.jdamico.javax25.TestHelper;
+import org.jdamico.javax25.PacketHandlerImpl;
 import org.jdamico.javax25.ax25.Afsk1200Modulator;
 import org.jdamico.javax25.ax25.Afsk1200MultiDemodulator;
 import org.jdamico.javax25.ax25.Packet;
@@ -54,7 +54,7 @@ public class AppTest extends TestCase
 		int rate = 48000;
 		int filter_length = 32;
 
-		TestHelper t = new TestHelper();
+		PacketHandlerImpl t = new PacketHandlerImpl();
 		Afsk1200Modulator mod = null;
 		PacketDemodulator multi = null;
 		try {
