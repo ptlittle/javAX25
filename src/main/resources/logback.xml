@@ -1,0 +1,35 @@
+<configuration debug="true" scan="true" scanPeriod="60 seconds">
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener" />
+<!-- https://logback.qos.ch/manual/layouts.html -->
+<!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <Pattern>%-5level [%thread] %logger{36} - %msg%n%ex</Pattern>
+        </encoder>
+    </appender>
+
+    <!-- http://logback.qos.ch/manual/appenders.html -->
+    <appender name="SMTP" class="com.akamesh.base64tones.LogbackSMTPAppenderLimiter">
+        <smtpHost>${SMTP_HOST}</smtpHost>
+        <smtpPort>${SMTP_PORT}</smtpPort>
+        <from>${LOGGER_FROM}</from>
+        <!-- one or more recipients are possible -->
+        <to>${LOGGER_TO}</to>
+        <to>${LOGGER_CC}</to>
+        <subject>container_name:r-${HOSTNAME}-* source:${DOCKER_HOSTNAME} container_id:${DOCKER_CONTAINER_ID} alert via /app/conf/logback.xml</subject>
+        <includeCallerData>true</includeCallerData>
+        <presentationHeader>Use any of the fields above to search elasticsearch</presentationHeader>
+        <oneEmailPerMillis>300000</oneEmailPerMillis>
+        <asynchronousSending>true</asynchronousSending>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} -%msg%n%ex</pattern>
+        </layout>
+    </appender>
+
+    <logger name="ch.qos.logback" level="TRACE" />
+
+    <root level="${LOGLEVEL}">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="SMTP"/>
+    </root>
+</configuration>
