@@ -9,7 +9,7 @@
     </appender>
 
     <!-- http://logback.qos.ch/manual/appenders.html -->
-    <appender name="SMTP" class="com.akamesh.base64tones.LogbackSMTPAppenderLimiter">
+    <appender name="SMTP" class="org.jdamico.javax25.LogbackSMTPAppenderLimiter">
         <smtpHost>${SMTP_HOST}</smtpHost>
         <smtpPort>${SMTP_PORT}</smtpPort>
         <from>${LOGGER_FROM}</from>

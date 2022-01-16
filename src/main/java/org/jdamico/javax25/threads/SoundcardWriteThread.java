@@ -1,4 +1,5 @@
 package org.jdamico.javax25.threads;
+
 import org.jdamico.javax25.TNCInterface;
 import org.jdamico.javax25.ax25.PacketDemodulator;
 import org.jdamico.javax25.ax25.PacketModulator;

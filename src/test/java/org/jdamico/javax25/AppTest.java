@@ -98,7 +98,8 @@ public class AppTest extends TestCase {
 		/*** preparing to generate or capture audio packets ***/
 
 		String input = null;
-		String output = "PulseAudio Mixer";
+		//String output = "PulseAudio Mixer" ;
+		String output = "default [default]" ;
 
 		int buffer_size = -1;
 		try {
@@ -138,10 +139,10 @@ public class AppTest extends TestCase {
 		/*** sound a test packet and exit ***/
 
 		if (output != null) {
-			// sc.openSoundOutput(output);
+			// soundcard.openSoundOutput(output);
 			modulator.prepareToTransmit(packet);
 			System.out.printf("Start transmitter\n");
-			// sc.startTransmitter();
+			// soundcard.startTransmitter();
 			if (transmitController != null) {
 				transmitController.startTransmitter();
 			}

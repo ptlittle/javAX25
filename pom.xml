@@ -32,10 +32,11 @@
 			<version>1.1.1</version>
 		</dependency>
 
+<!-- use alpha2 due to https://www.mail-archive.com/slf4j-dev@qos.ch/msg02861.html -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>2.0.0-alpha6</version>
+			<version>2.0.0-alpha2</version>
 		</dependency>
 
 		<dependency>
