@@ -20,32 +20,14 @@
  */
 package org.jdamico.javax25.agwpe;
 
-import java.io.BufferedReader;
-
-import gnu.io.CommPort;
-import gnu.io.CommPortIdentifier;
-import gnu.io.NoSuchPortException;
-import gnu.io.PortInUseException;
-import gnu.io.SerialPort;
-
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Properties;
-
-import javax.sound.sampled.*;
 
 import org.jdamico.javax25.ax25.Afsk1200Modulator;
 import org.jdamico.javax25.ax25.Afsk1200MultiDemodulator;
@@ -57,6 +39,9 @@ import org.jdamico.javax25.radiocontrol.SerialTransmitController;
 import org.jdamico.javax25.radiocontrol.TransmitController;
 import org.jdamico.javax25.soundcard.Soundcard;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class TNC extends Thread implements PacketHandler {
 	
 	public void handlePacket(byte[] bytes) {

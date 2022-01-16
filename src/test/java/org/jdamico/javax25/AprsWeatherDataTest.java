@@ -1,19 +1,19 @@
 package org.jdamico.javax25;
 
-import static org.junit.Assert.*;
-
 import java.util.Properties;
 
 import org.jdamico.javax25.ax25.Afsk1200Modulator;
 import org.jdamico.javax25.ax25.Afsk1200MultiDemodulator;
 import org.jdamico.javax25.ax25.Packet;
 import org.jdamico.javax25.ax25.PacketDemodulator;
-import org.jdamico.javax25.radiocontrol.SerialTransmitController;
 import org.jdamico.javax25.radiocontrol.TransmitController;
 import org.jdamico.javax25.soundcard.Soundcard;
 import org.junit.Before;
 import org.junit.Test;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AprsWeatherDataTest {
 
 	@Before
@@ -23,93 +23,99 @@ public class AprsWeatherDataTest {
 	@Test
 	public void test() {
 		String callsign = "NOCALL";
-		System.out.println("Callsign in test packet is: "+callsign);
-		
+		System.out.println("Callsign in test packet is: " + callsign);
+
 		String hms_position = "092122z2332.53S/04645.51W";
 		String weather_data = "_220/004g005t-07r000p000P000h50b09900xSCI";
-		
-		String complete_weather_data = hms_position+weather_data;
-		
-		
-		
-		Packet packet = new Packet("APRS",
-				callsign,
-				new String[] {"WIDE1-1", "WIDE2-2"},
-				Packet.AX25_CONTROL_APRS,
-				Packet.AX25_PROTOCOL_NO_LAYER_3,
-				complete_weather_data.getBytes());
-		
+
+		String complete_weather_data = hms_position + weather_data;
+
+		Packet packet = new Packet("APRS", callsign, new String[] { "WIDE1-1", "WIDE2-2" }, Packet.AX25_CONTROL_APRS,
+				Packet.AX25_PROTOCOL_NO_LAYER_3, complete_weather_data.getBytes());
+
 		System.out.println(packet);
-		
-		
+
 		Soundcard.enumerate();
 
-		Properties p = System.getProperties();
+		Properties properties = System.getProperties();
 
 		int rate = 48000;
 		int filter_length = 32;
 
-		PacketHandlerImpl t = new PacketHandlerImpl();
-		Afsk1200Modulator mod = null;
-		PacketDemodulator multi = null;
+		PacketHandlerImpl packetHandlerImpl = new PacketHandlerImpl();
+		Afsk1200Modulator modulator = null;
+		PacketDemodulator demodulator = null;
 		try {
-			multi = new Afsk1200MultiDemodulator(rate,t);
-			mod = new Afsk1200Modulator(rate);
+			demodulator = new Afsk1200MultiDemodulator(rate, packetHandlerImpl);
+			modulator = new Afsk1200Modulator(rate);
 		} catch (Exception e) {
-			System.out.println("Exception trying to create an Afsk1200 object: "+e.getMessage());
+			System.out.println("Exception trying to create an Afsk1200 object: " + e.getMessage());
 		}
-		
+
 		String input = null;
-		String output = "PulseAudio Mixer";
+		// String output = "PulseAudio Mixer";
+		String output = "default";
 
 		int buffer_size = -1;
 		try {
 			// our default is 100ms
-			buffer_size = Integer.parseInt(p.getProperty("latency", "100").trim());
-		} catch (Exception e){
-			System.err.println("Exception parsing buffersize "+e.toString());
+			buffer_size = Integer.parseInt(properties.getProperty("latency", "100").trim());
+		} catch (Exception e) {
+			System.err.println("Exception parsing buffersize " + e.toString());
 		}
 
-		Soundcard sc = new Soundcard(rate,input,output,buffer_size,multi,mod);
+		Soundcard soundcard = null;
 
-		if (p.containsKey("audio-level")) {
-			sc.displayAudioLevel();
+		try {
+			soundcard = new Soundcard(rate, input, output, buffer_size, demodulator, modulator);
+		} catch (Exception e) {
+			log.error(e.toString(), e) ;
+		}
+
+		if (properties.containsKey("audio-level")) {
+			soundcard.displayAudioLevel();
 		}
 
 		/*** generate test tones and exit ***/
 
-		TransmitController ptt = null;
+		TransmitController transmitController = null;
 
 		int tones_duration = -1; // in seconds
 		try {
-			tones_duration = Integer.parseInt(p.getProperty("tones", "-1").trim());
-		} catch (Exception e){
-			System.err.println("Exception parsing tones "+e.toString());
+			tones_duration = Integer.parseInt(properties.getProperty("tones", "-1").trim());
+		} catch (Exception e) {
+			System.err.println("Exception parsing tones " + e.toString());
 		}
 		if (tones_duration > 0) {
-			//sc.openSoundOutput(output);			
-			mod.prepareToTransmitFlags(tones_duration);
-			sc.transmit();
+			// soundcard.openSoundOutput(output);
+			modulator.prepareToTransmitFlags(tones_duration);
+			soundcard.transmit();
 		}
 
 		if (output != null) {
-			//sc.openSoundOutput(output);			
-			mod.prepareToTransmit(packet);
+			// soundcard.openSoundOutput(output);
+			modulator.prepareToTransmit(packet);
 			System.out.printf("Start transmitter\n");
-			//sc.startTransmitter();
-			if (ptt != null) ptt.startTransmitter();
-			sc.transmit();
+			// soundcard.startTransmitter();
+			if (transmitController != null) {
+				transmitController.startTransmitter();
+			}
+			soundcard.transmit();
 			System.out.printf("Stop transmitter\n");
-			if (ptt != null) ptt.stopTransmitter();
-			if (ptt != null) ptt.close();
-			//if (ptt != null) ptt.stopTransmitter());
-			//sc.stopTransmitter();
-			//int n;
-			//while ((n = ae.afsk.getSamples()) > 0){
-			// 	ae.afsk.addSamples(Arrays.copyOf(tx_samples, n));
-			//}
+			if (transmitController != null) {
+				transmitController.stopTransmitter();
+			}
+			if (transmitController != null) {
+				transmitController.close();
+			}
+			// if (transmitController != null) transmitController.stopTransmitter());
+			// soundcard.stopTransmitter();
+			// int n;
+			// while ((n = ae.afsk.getSamples()) > 0){
+			// ae.afsk.addSamples(Arrays.copyOf(tx_samples, n));
+			// }
 		}
-		
+
 	}
 
 }
