@@ -1,10 +1,6 @@
 package org.jdamico.javax25.threads;
 import java.util.Properties;
 
-import org.jdamico.javax25.TNCInterface;
-import org.jdamico.javax25.TNCProcMonitor;
-import org.jdamico.javax25.TNCQueue;
-
 /**
  * Override this class to do your connection initialization and read functions.
  */

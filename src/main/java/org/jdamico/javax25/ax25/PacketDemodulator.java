@@ -19,8 +19,6 @@
  */
 package org.jdamico.javax25.ax25;
 
-import org.jdamico.javax25.soundcard.SoundcardConsumer;
-
 public abstract class PacketDemodulator extends SoundcardConsumer {
 	public PacketDemodulator(int sample_rate) {
 		super(sample_rate);

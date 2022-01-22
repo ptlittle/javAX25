@@ -1,6 +1,9 @@
+package org.jdamico.javax25.ax25;
+
 /*
  * 
  * 
+
  * Copyright (C) Sivan Toledo, 2012
  * 
  *      This program is free software; you can redistribute it and/or modify
@@ -18,7 +21,6 @@
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-package org.jdamico.javax25.soundcard;
 
 public abstract class SoundcardConsumer {
 

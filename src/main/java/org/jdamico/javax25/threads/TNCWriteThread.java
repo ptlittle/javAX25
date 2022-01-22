@@ -1,10 +1,8 @@
 package org.jdamico.javax25.threads;
-import org.jdamico.javax25.TNCInterface;
-import org.jdamico.javax25.TNCQueue;
 
-abstract class TNCWriteThread extends Thread
+abstract public class TNCWriteThread extends Thread
 {
-	final TNCQueue queue = new TNCQueue();
+	final protected TNCQueue queue = new TNCQueue();
 
 	volatile static int TNCSpeed = 1200;
 	volatile static int TNCVias = 7;
@@ -14,7 +12,7 @@ abstract class TNCWriteThread extends Thread
 	 *  Pace packets so TNC is not overrun
 	 * @param ax25Length length of ax.25 frame, including FEND's and FCS
 	 */
-	protected void pace(TNCInterface.AX25Packet f)
+	public void pace(TNCInterface.AX25Packet f)
 	{
 		if (TNCSpeed >= 8)
 		{

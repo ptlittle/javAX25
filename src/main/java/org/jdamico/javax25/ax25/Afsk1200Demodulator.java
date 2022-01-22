@@ -1,4 +1,7 @@
+package org.jdamico.javax25.ax25;
+
 /*
+
  * Audio FSK modem for AX25 (1200 Baud, 1200/2200Hz).
  * 
  * Copyright (C) Sivan Toledo, 2012
@@ -17,7 +20,6 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jdamico.javax25.ax25;
 
 import lombok.extern.slf4j.Slf4j;
 

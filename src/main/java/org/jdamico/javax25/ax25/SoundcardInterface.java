@@ -1,14 +1,11 @@
-package org.jdamico.javax25;
+package org.jdamico.javax25.ax25;
 import java.util.Properties;
 
-import org.jdamico.javax25.ax25.Afsk1200Modulator;
-import org.jdamico.javax25.ax25.PacketDemodulator;
-import org.jdamico.javax25.ax25.PacketHandler;
 import org.jdamico.javax25.radiocontrol.SerialTransmitController;
 import org.jdamico.javax25.radiocontrol.TransmitController;
-import org.jdamico.javax25.soundcard.Soundcard;
 import org.jdamico.javax25.threads.SoundcardWriteThread;
 import org.jdamico.javax25.threads.TNCConnectThread;
+import org.jdamico.javax25.threads.TNCInterface;
 
 
 
@@ -123,7 +120,7 @@ final public class SoundcardInterface extends TNCConnectThread
 			}
 
 			
-	  	sc   = new org.jdamico.javax25.soundcard.Soundcard(rate, soundin, soundout, latency_ms, 
+	  	sc   = new org.jdamico.javax25.ax25.Soundcard(rate, soundin, soundout, latency_ms, 
 	  	                                      demodulator, modulator);
 			new Thread(this, "SoundInterface Read").start();
 		}

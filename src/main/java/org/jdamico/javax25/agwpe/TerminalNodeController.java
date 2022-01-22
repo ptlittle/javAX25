@@ -35,9 +35,9 @@ import org.jdamico.javax25.ax25.Packet;
 import org.jdamico.javax25.ax25.PacketDemodulator;
 import org.jdamico.javax25.ax25.PacketHandler;
 import org.jdamico.javax25.ax25.PacketModulator;
+import org.jdamico.javax25.ax25.Soundcard;
 import org.jdamico.javax25.radiocontrol.SerialTransmitController;
 import org.jdamico.javax25.radiocontrol.TransmitController;
-import org.jdamico.javax25.soundcard.Soundcard;
 
 import lombok.extern.slf4j.Slf4j;
 

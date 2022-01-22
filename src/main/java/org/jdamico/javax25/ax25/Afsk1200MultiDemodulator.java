@@ -1,3 +1,5 @@
+package org.jdamico.javax25.ax25;
+
 /*
  * Audio FSK modem for AX25 (1200 Baud, 1200/2200Hz).
  * This class combines two demodulators into one packet stream,
@@ -19,9 +21,8 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jdamico.javax25.ax25;
 
-//import java.util.Arrays;
+import java.util.Arrays;
 
 public class Afsk1200MultiDemodulator extends PacketDemodulator {
 

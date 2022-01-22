@@ -1,4 +1,5 @@
-package org.jdamico.javax25;
+package org.jdamico.javax25.threads;
+
 import java.io.InputStream;
 import java.io.PrintStream;
 

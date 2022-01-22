@@ -1,37 +1,12 @@
-/*
- * 
- * 
- * Copyright (C) Sivan Toledo, 2012
- * 
- * The CRC computation code is adapted from soundmodem, Copyright (C) 1999-2000
- * by Thomas Sailer (sailer@ife.ee.ethz.ch). That code is also released under GPL
- * version 2 or later.
- * 
- *      This program is free software; you can redistribute it and/or modify
- *      it under the terms of the GNU General Public License as published by
- *      the Free Software Foundation; either version 2 of the License, or
- *      (at your option) any later version.
- *
- *      This program is distributed in the hope that it will be useful,
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of
- *      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *      GNU General Public License for more details.
- *
- *      You should have received a copy of the GNU General Public License
- *      along with this program; if not, write to the Free Software
- *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-
-
 package org.jdamico.javax25.ax25;
 
-//import java.util.Arrays;
+import java.util.Arrays;
 
 public class Packet {
 	
-	private final int AX25_CRC_CORRECT   = 0xF0B8;
-	private final int CRC_CCITT_INIT_VAL = 0xFFFF;
-	private final int MAX_FRAME_SIZE = // not including delimiting flags
+	protected final int AX25_CRC_CORRECT   = 0xF0B8;
+	protected final int CRC_CCITT_INIT_VAL = 0xFFFF;
+	protected final int MAX_FRAME_SIZE = // not including delimiting flags
 		                   7+7            // source and destination
 		                  +(8*7)          // path
 		                  +1+1            // control and PID
@@ -43,7 +18,7 @@ public class Packet {
 	public static final int AX25_PROTOCOL_UNCOMPRESSED_TCPIP = 0x07;
 	public static final int AX25_PROTOCOL_NO_LAYER_3         = 0xF0; // used for APRS
 
-	private final int crc_ccitt_tab[] = {
+	protected final int crc_ccitt_tab[] = {
 	        0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
 	        0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
 	        0x1081, 0x0108, 0x3393, 0x221a, 0x56a5, 0x472c, 0x75b7, 0x643e,
@@ -78,11 +53,11 @@ public class Packet {
 	        0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78,
 	};
 
-	private int crc = CRC_CCITT_INIT_VAL;
-	private byte packet[] = new byte[MAX_FRAME_SIZE];
-	private int size = 0;
+	protected int crc = CRC_CCITT_INIT_VAL;
+	protected byte packet[] = new byte[MAX_FRAME_SIZE];
+	protected int size = 0;
 	
-	private float[] stats;
+	protected float[] stats;
 	public void statistics(float[] stats) { 
 		this.stats = stats;
 		for (float f : stats)
@@ -228,7 +203,7 @@ public class Packet {
 	public String[] path;
 	public byte[]   payload;
 	
-	private static String parseCall(byte[] packet, int offset) {
+	protected static String parseCall(byte[] packet, int offset) {
 		String call = "";
 		int c, i;
 		//int size = 0;
@@ -338,7 +313,7 @@ public class Packet {
 
 	}
 	
-	private void crc_ccitt_update(byte b) {
+	protected void crc_ccitt_update(byte b) {
     crc = (crc >> 8) ^ crc_ccitt_tab[(crc ^ b) & 0xff];
   }
 

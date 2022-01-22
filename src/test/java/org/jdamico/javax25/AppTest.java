@@ -11,7 +11,9 @@ import org.jdamico.javax25.ax25.Afsk1200MultiDemodulator;
 import org.jdamico.javax25.ax25.Packet;
 import org.jdamico.javax25.ax25.PacketDemodulator;
 import org.jdamico.javax25.ax25.PacketHandler;
-import org.jdamico.javax25.soundcard.Soundcard;
+import org.jdamico.javax25.ax25.PacketHandlerStdout;
+import org.jdamico.javax25.ax25.Soundcard;
+import org.jdamico.javax25.RecordLinuxSpeakers;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

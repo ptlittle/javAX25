@@ -1,9 +1,8 @@
-package org.jdamico.javax25;
+package org.jdamico.javax25.threads;
 import java.util.Vector;
 
-public final class TNCQueue
-{
-	private final Vector queue = new Vector();
+public final class TNCQueue {
+	private final Vector<TNCInterface.AX25Packet> queue = new Vector<>();
 	private boolean queueEnabled = true;
 
 	/**
@@ -21,7 +20,7 @@ public final class TNCQueue
 				if (!queueEnabled)
 					return null;
 			}
-			TNCInterface.AX25Packet retval = (TNCInterface.AX25Packet)queue.firstElement();
+			TNCInterface.AX25Packet retval = queue.firstElement();
 			queue.removeElementAt(0);
 			return retval;
 		}

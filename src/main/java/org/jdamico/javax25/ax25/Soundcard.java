@@ -18,7 +18,7 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jdamico.javax25.soundcard;
+package org.jdamico.javax25.ax25;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -57,8 +57,8 @@ public class Soundcard {
 
 	// protected Afsk1200 afsk;
 	// protected HalfduplexSoundcardClient afsk;
-	protected SoundcardConsumer consumer;
-	protected SoundcardProducer producer;
+	protected SoundcardConsumer soundcardConsumer;
+	protected SoundcardProducer soundcardProducer;
 
 	protected int latency_ms;
 
@@ -66,8 +66,8 @@ public class Soundcard {
 			SoundcardProducer producer) {
 		this.rate = rate;
 		// this.afsk = afsk;
-		this.producer = producer;
-		this.consumer = consumer;
+		soundcardProducer = producer;
+		soundcardConsumer = consumer;
 		this.latency_ms = latency_ms;
 
 		audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, rate, 16, /* bits per value */
@@ -87,11 +87,11 @@ public class Soundcard {
 		sourceDataLine.start();
 
 		int n;
-		float[] samples = producer.getTxSamplesBuffer();
+		float[] samples = soundcardProducer.getTxSamplesBuffer();
 		byte[] buffer = new byte[2 * samples.length];
 		ByteBuffer bb = ByteBuffer.wrap(buffer).order(ByteOrder.LITTLE_ENDIAN);
 
-		while ((n = producer.getSamples()) > 0) {
+		while ((n = soundcardProducer.getSamples()) > 0) {
 			bb.rewind();
 			for (int i = 0; i < n; i++) {
 				// Convert to a 16-bit signed integer and encode as little endian
@@ -143,7 +143,7 @@ public class Soundcard {
 			int buffer_size_in_samples = (int) Math.round(latency_ms * ((double) rate / 1000.0) / 4.0);
 			capture_buffer = new byte[2 * buffer_size_in_samples];
 			if (audioInputStream == null) {
-				System.err.println("No sound input device, receiver exiting.");
+				log.error("No sound input device, receiver exiting.");
 				return;
 			}
 
@@ -151,14 +151,23 @@ public class Soundcard {
 			// float max = -1.0f;
 			ByteBuffer byteBuffer = ByteBuffer.wrap(capture_buffer).order(ByteOrder.LITTLE_ENDIAN);
 			float[] f = new float[capture_buffer.length / 2];
-			System.err.printf("Listening for packets\n");
+			log.debug("Listening for packets");
+			
+			log.debug("audioInputStream.isAvailable {}", audioInputStream.available()) ;
+			
 			while (true) {
 				int audioData;
 
 				// https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/javax/sound/sampled/AudioInputStream.html
 				audioData = audioInputStream.read(capture_buffer, 0, capture_buffer.length);
+				
+				if (-1 == audioData) {
+					// end of stream reached
+					break;
+				}
+				
+				log.debug("read {} bytes of audio",audioData);
 				byteBuffer.rewind();
-				// System.out.printf("read %d bytes of audio\n",rv);
 				for (int i = 0; i < audioData / 2; i++) {
 					short s = byteBuffer.getShort();
 					f[i] = (float) s / 32768.0f;
@@ -171,13 +180,13 @@ public class Soundcard {
 					// if (f[i] < min) min = f[i];
 					if (j == rate) {
 						// System.err.printf("Audio in range [%f, %f]\n",min,max);
-						System.err.printf("Audio level %d\n", consumer.peak());
+						System.err.printf("Audio level %d\n", soundcardConsumer.peak());
 						j = 0;
 						// min = 1.0f;
 						// max = -1.0f;
 					}
 				}
-				consumer.addSamples(f, audioData / 2);
+				soundcardConsumer.addSamples(f, audioData / 2);
 			}
 
 		} catch (Exception e) {

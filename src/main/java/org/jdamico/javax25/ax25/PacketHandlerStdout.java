@@ -1,5 +1,6 @@
 /*
- * 
+ * Test program for the Afsk1200 sound-card modem.
+ * For examples, see test.bat
  * 
  * Copyright (C) Sivan Toledo, 2012
  * 
@@ -17,15 +18,24 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+package org.jdamico.javax25.ax25;
 
-package org.jdamico.javax25.soundcard;
-
-public interface SoundcardProducer {
+public class PacketHandlerStdout implements PacketHandler {
 	
-	//public void addSamples(float[] s) {
-	//	addSamples(s,s.length);
-	//}
+	public void handlePacket(byte[] bytes) {
+		System.out.println(Packet.format(bytes));
+		return;
+		/*
+		if (last!=null && Arrays.equals(last, bytes) && sample_count <= last_sample_count + 100) {
+			dup_count++;
+			System.out.printf("Duplicate, %d so far\n",dup_count);
+		} else {
+			packet_count++;
+			System.out.println(""+packet_count);
+			last = bytes;
+			last_sample_count = sample_count;
+		}
+		*/
+	}
 
-	public abstract float[] getTxSamplesBuffer();
-	public abstract int getSamples();
 }

@@ -1,24 +1,25 @@
 package org.jdamico.javax25.threads;
 
-import org.jdamico.javax25.TNCInterface;
+import org.jdamico.javax25.ax25.Packet;
+import org.jdamico.javax25.ax25.PacketDemodulator;
 import org.jdamico.javax25.ax25.PacketModulator;
+import org.jdamico.javax25.ax25.Soundcard;
 import org.jdamico.javax25.radiocontrol.TransmitController;
-import org.jdamico.javax25.soundcard.Soundcard;
+import org.jdamico.javax25.threads.TNCInterface.AX25Packet;
 
 public final class SoundcardWriteThread extends TNCWriteThread {
-	//private sivantoledo.ax25.Afsk1200 afsk;
-	private org.jdamico.javax25.soundcard.Soundcard soundcard;
+	protected Soundcard soundcard;
 
-	private org.jdamico.javax25.ax25.PacketDemodulator demodulator;
-	private org.jdamico.javax25.ax25.PacketModulator modulator;
+	protected PacketDemodulator demodulator;
+	protected PacketModulator modulator;
 
-	private double persistence; // CSMA access probability
-	private int slot_time;      // wait between CSMA attemps in 10ms units
+	protected double persistence; // CSMA access probability
+	protected int slot_time;      // wait between CSMA attemps in 10ms units
 
-	private TransmitController ptt;
+	protected TransmitController ptt;
 
-	public SoundcardWriteThread(//sivantoledo.ax25.Afsk1200 afsk,
-			org.jdamico.javax25.ax25.PacketDemodulator demodulator,
+	public SoundcardWriteThread(
+			PacketDemodulator demodulator,
 			PacketModulator modulator,
 			Soundcard soundcard,
 			double persistence, int slot_time,

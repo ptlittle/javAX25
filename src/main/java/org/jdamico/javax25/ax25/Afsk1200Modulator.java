@@ -1,3 +1,5 @@
+package org.jdamico.javax25.ax25;
+
 /*
  * Audio FSK modem for AX25 (1200 Baud, 1200/2200Hz).
  * 
@@ -17,9 +19,6 @@
  *      along with this program; if not, write to the Free Software
  *      Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-package org.jdamico.javax25.ax25;
-
-//import java.util.Arrays;
 
 public class Afsk1200Modulator 
   implements PacketModulator
