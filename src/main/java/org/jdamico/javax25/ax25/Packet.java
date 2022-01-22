@@ -25,8 +25,6 @@
 
 package org.jdamico.javax25.ax25;
 
-import java.io.UnsupportedEncodingException;
-
 //import java.util.Arrays;
 
 public class Packet {

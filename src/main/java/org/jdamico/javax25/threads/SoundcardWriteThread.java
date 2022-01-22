@@ -1,14 +1,13 @@
 package org.jdamico.javax25.threads;
 
 import org.jdamico.javax25.TNCInterface;
-import org.jdamico.javax25.ax25.PacketDemodulator;
 import org.jdamico.javax25.ax25.PacketModulator;
 import org.jdamico.javax25.radiocontrol.TransmitController;
 import org.jdamico.javax25.soundcard.Soundcard;
 
 public final class SoundcardWriteThread extends TNCWriteThread {
 	//private sivantoledo.ax25.Afsk1200 afsk;
-	private org.jdamico.javax25.soundcard.Soundcard sc;
+	private org.jdamico.javax25.soundcard.Soundcard soundcard;
 
 	private org.jdamico.javax25.ax25.PacketDemodulator demodulator;
 	private org.jdamico.javax25.ax25.PacketModulator modulator;
@@ -19,9 +18,9 @@ public final class SoundcardWriteThread extends TNCWriteThread {
 	private TransmitController ptt;
 
 	public SoundcardWriteThread(//sivantoledo.ax25.Afsk1200 afsk,
-			PacketDemodulator demodulator,
+			org.jdamico.javax25.ax25.PacketDemodulator demodulator,
 			PacketModulator modulator,
-			Soundcard sc,
+			Soundcard soundcard,
 			double persistence, int slot_time,
 			TransmitController ptt
       ) {
@@ -30,7 +29,7 @@ public final class SoundcardWriteThread extends TNCWriteThread {
 		//this.afsk = afsk;
 		this.demodulator = demodulator;
 		this.modulator = modulator;
-		this.sc   = sc;
+		this.soundcard   = soundcard;
 		this.persistence = persistence;
 		this.slot_time   = slot_time;
 		setName("Soundcard Write Thread");
@@ -64,7 +63,7 @@ public final class SoundcardWriteThread extends TNCWriteThread {
 				modulator.prepareToTransmit(new org.jdamico.javax25.ax25.Packet(newpacket));
 				// key PTT
 				if (ptt != null) ptt.startTransmitter();
-				sc.transmit();
+				soundcard.transmit();
 				// unkey PTT; we have drained the audio buffer
 				if (ptt != null) ptt.stopTransmitter();
 				

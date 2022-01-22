@@ -20,6 +20,8 @@
  */
 package org.jdamico.javax25.soundcard;
 
+import java.io.File;
+import java.io.FileInputStream;
 //import java.io.FileNotFoundException;
 //import java.io.FileOutputStream;
 //import java.io.PrintStream;
@@ -29,6 +31,7 @@ import java.nio.ByteOrder;
 //import java.util.Properties;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineUnavailableException;
@@ -41,42 +44,45 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Soundcard {
 
-	private int rate;
-	// private final int channels = 2;
-	// private final int samplebytes = 4;
-	private final int channels = 1;
-	private final int samplebytes = 2;
+	protected int rate;
+	protected final int channels = 1;
+	protected final int samplebytes = 2;
 
-	private TargetDataLine tdl = null;
-	private SourceDataLine sourceDataLine = null;
-	private byte[] capture_buffer;
+	protected AudioFormat audioFormat = null;
+	protected AudioInputStream audioInputStream = null;
+	protected SourceDataLine sourceDataLine = null;
+	protected byte[] capture_buffer;
 
-	private boolean display_audio_level = false;
+	protected boolean display_audio_level = false;
 
-	// private Afsk1200 afsk;
-	// private HalfduplexSoundcardClient afsk;
-	private SoundcardConsumer consumer;
-	private SoundcardProducer producer;
+	// protected Afsk1200 afsk;
+	// protected HalfduplexSoundcardClient afsk;
+	protected SoundcardConsumer consumer;
+	protected SoundcardProducer producer;
 
-	private int latency_ms;
+	protected int latency_ms;
 
-	public Soundcard(int rate, String input_device, String output_device, int latency_ms,
-			// HalfduplexSoundcardClient afsk
-			SoundcardConsumer consumer, SoundcardProducer producer) {
+	public Soundcard(int rate, String input, String output, int latency_ms, SoundcardConsumer consumer,
+			SoundcardProducer producer) {
 		this.rate = rate;
 		// this.afsk = afsk;
 		this.producer = producer;
 		this.consumer = consumer;
 		this.latency_ms = latency_ms;
-		if (input_device != null) {
-			openSoundInput(input_device);
-		}
-		if (output_device != null) {
-			openSoundOutput(output_device);
-		}
+
+		audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, rate, 16, /* bits per value */
+				channels, /* stereo */
+				samplebytes, /* sample size */
+				rate, false /* false=little endian */);
+
+		setInputDevice(input) ;
+		setOutputDevice(output) ;
+
 	}
 
-	public void transmit() {
+	
+	public void transmit() {	
+		
 		sourceDataLine.flush();
 		sourceDataLine.start();
 
@@ -99,34 +105,28 @@ public class Soundcard {
 	}
 
 	public static void enumerate() {
-		Mixer.Info[] mis = AudioSystem.getMixerInfo();
+		Mixer.Info[] mixers = AudioSystem.getMixerInfo();
 
-		System.out.printf("Available sound devices:\n");
+		log.info("Available sound devices:");
 
-		for (Mixer.Info mi : mis) {
-			String name = mi.getName();
-			// System.out.println(" "+mi.getName()+": "+mi.getVendor()+":
-			// "+mi.getDescription());
-			// System.out.println(" "+mi.getName());
+		for (Mixer.Info mixer : mixers) {
+			String name = mixer.getName();
+			log.debug("mixer {}", mixer.toString());
 
-			Line.Info[] lis;
-			lis = AudioSystem.getMixer(mi).getSourceLineInfo();
-			for (Line.Info li : lis) {
-				if (SourceDataLine.class.equals(li.getLineClass()))
-					System.out.println("  output: " + name);
-				// System.out.println(" output device = "+li.getLineClass());
+			Line.Info[] sourceLines;
+			sourceLines = AudioSystem.getMixer(mixer).getSourceLineInfo();
+			for (Line.Info sourceLine : sourceLines) {
+				log.debug("sourceLine {}", sourceLine.toString());
+				if (SourceDataLine.class.equals(sourceLine.getLineClass()))
+					log.info("  output: {}", name);
 			}
-			lis = AudioSystem.getMixer(mi).getTargetLineInfo();
-			for (Line.Info li : lis) {
-				if (TargetDataLine.class.equals(li.getLineClass())) {
-					System.out.println("  input : " + name);
-
+			Line.Info[] targetLines;
+			targetLines = AudioSystem.getMixer(mixer).getTargetLineInfo();
+			for (Line.Info targetLine : targetLines) {
+				log.debug("targetLine {}", targetLine.toString());
+				if (TargetDataLine.class.equals(targetLine.getLineClass())) {
+					log.info("  output: {}", name);
 				}
-
-				// System.out.println(" input device = "+li.getLineClass());
-				// System.out.println(" isInstance =
-				// "+li.getLineClass().isInstance(TargetDataLine.class));
-				// System.out.println(" isInstance = "+));
 			}
 		}
 	}
@@ -135,72 +135,105 @@ public class Soundcard {
 		display_audio_level = true;
 	}
 
+	
 	public void receive() {
-		int j = 0;
-		int buffer_size_in_samples = (int) Math.round(latency_ms * ((double) rate / 1000.0) / 4.0);
-		capture_buffer = new byte[2 * buffer_size_in_samples];
-		if (tdl == null) {
-			System.err.println("No sound input device, receiver exiting.");
-			return;
-		}
-		tdl.flush();
-		// tdl.drain();
-		float min = 1.0f;
-		float max = -1.0f;
-		ByteBuffer bb = ByteBuffer.wrap(capture_buffer).order(ByteOrder.LITTLE_ENDIAN);
-		float[] f = new float[capture_buffer.length / 2];
-		System.err.printf("Listening for packets\n");
-		while (true) {
-			int rv;
-			rv = tdl.read(capture_buffer, 0, capture_buffer.length);
-			bb.rewind();
-			// System.out.printf("read %d bytes of audio\n",rv);
-			for (int i = 0; i < rv / 2; i++) {
-				short s = bb.getShort();
-				f[i] = (float) s / 32768.0f;
-				if (!display_audio_level)
-					continue;
-				j++;
-				// System.out.printf("j=%d\n",j);
-				// if (f[i] > max) max = f[i];
-				// if (f[i] < min) min = f[i];
-				if (j == rate) {
-					// System.err.printf("Audio in range [%f, %f]\n",min,max);
-					System.err.printf("Audio level %d\n", consumer.peak());
-					j = 0;
-					// min = 1.0f;
-					// max = -1.0f;
-				}
+
+		try {
+			int j = 0;
+			int buffer_size_in_samples = (int) Math.round(latency_ms * ((double) rate / 1000.0) / 4.0);
+			capture_buffer = new byte[2 * buffer_size_in_samples];
+			if (audioInputStream == null) {
+				System.err.println("No sound input device, receiver exiting.");
+				return;
 			}
-			consumer.addSamples(f, rv / 2);
+
+			// float min = 1.0f;
+			// float max = -1.0f;
+			ByteBuffer byteBuffer = ByteBuffer.wrap(capture_buffer).order(ByteOrder.LITTLE_ENDIAN);
+			float[] f = new float[capture_buffer.length / 2];
+			System.err.printf("Listening for packets\n");
+			while (true) {
+				int audioData;
+
+				// https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/javax/sound/sampled/AudioInputStream.html
+				audioData = audioInputStream.read(capture_buffer, 0, capture_buffer.length);
+				byteBuffer.rewind();
+				// System.out.printf("read %d bytes of audio\n",rv);
+				for (int i = 0; i < audioData / 2; i++) {
+					short s = byteBuffer.getShort();
+					f[i] = (float) s / 32768.0f;
+					if (!display_audio_level) {
+						continue;
+					}
+					j++;
+					// System.out.printf("j=%d\n",j);
+					// if (f[i] > max) max = f[i];
+					// if (f[i] < min) min = f[i];
+					if (j == rate) {
+						// System.err.printf("Audio in range [%f, %f]\n",min,max);
+						System.err.printf("Audio level %d\n", consumer.peak());
+						j = 0;
+						// min = 1.0f;
+						// max = -1.0f;
+					}
+				}
+				consumer.addSamples(f, audioData / 2);
+			}
+
+		} catch (Exception e) {
+			log.error(e.toString(), e);
 		}
 	}
 
-	private void openSoundInput(String mixer) {
-		AudioFormat fmt;
-		fmt = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, rate, 16, /* bits per value */
-				channels, /* stereo */
-				samplebytes, /* sample size */
-				rate, false /* false=little endian */);
+	public void setInputDevice(String input_device) {
+		if (input_device != null) {
+			File inputDeviceFile = new File(input_device);
+			if (inputDeviceFile.exists()) {
+				// try from a file
+				setInputDeviceFile(inputDeviceFile);
+			} else {
+				// try from a mixer
+				setInputDeviceMixer(input_device);
+			}
+		}
+	}
+	
+	public void setInputDeviceFile(File audioInputFile) {
+		log.info("entering setInputDeviceFile for file {}",audioInputFile.getAbsolutePath()) ;
+		
+		// length - the length in sample frames of the data in this stream
+		int numberOfFrames = 1;
+		try {
+			audioInputStream = new AudioInputStream(new FileInputStream(audioInputFile), audioFormat, numberOfFrames);
+		} catch (Exception e) {
+			log.error(e.toString(), e);
+		}
+		log.info("leaving setInputDeviceFile for file {}",audioInputFile.getAbsolutePath()) ;
+	}
 
-		Mixer.Info[] mis = AudioSystem.getMixerInfo();
+	public void setInputDeviceMixer(String desiredMixer) {
+		log.info("entering setInputDeviceMixer for mixer device {}",desiredMixer) ;
 
-		// TargetDataLine tdl = null;
-		for (Mixer.Info mi : mis) {
-			if (mi.getName().equalsIgnoreCase(mixer)) {
+		TargetDataLine targetDataLine = null;
+
+		Mixer.Info[] mixers = AudioSystem.getMixerInfo();
+
+		for (Mixer.Info mixer : mixers) {
+			if (mixer.getName().equalsIgnoreCase(desiredMixer)) {
 				try {
-					tdl = AudioSystem.getTargetDataLine(fmt, mi);
+					// https://docs.oracle.com/en/java/javase/11/docs/api/java.desktop/javax/sound/sampled/TargetDataLine.html
+					targetDataLine = AudioSystem.getTargetDataLine(audioFormat, mixer);
 					System.err.println("Opened an input sound device (target line): " + mixer);
 				} catch (LineUnavailableException lue) {
-					System.err.println("Sound input device not available: " + mixer);
+					System.err.println("Sound input device not available: " + desiredMixer);
 				} catch (IllegalArgumentException iae) {
 					System.err.println("Failed to open an input sound device: " + iae.getMessage());
 				}
 			}
 		}
 
-		if (tdl == null) {
-			System.err.println("Sound device not found (or is not an input device): " + mixer);
+		if (targetDataLine == null) {
+			System.err.println("Sound device not found (or is not an input device): " + desiredMixer);
 			return;
 		}
 
@@ -211,25 +244,21 @@ public class Soundcard {
 
 		int buffer_size_in_samples = (int) Math.round(latency_ms * ((double) rate / 1000.0));
 		try {
-			tdl.open(fmt, 2 * buffer_size_in_samples);
-			tdl.start();
-		} catch (LineUnavailableException lue) {
-			tdl = null;
-			System.err.println("Cannot open input sound device");
+			audioInputStream = new AudioInputStream(targetDataLine);
+			targetDataLine.open(audioFormat, 2 * buffer_size_in_samples);
+			targetDataLine.start();
+		} catch (LineUnavailableException e) {
+			targetDataLine = null;
+			audioInputStream = null ;
+			log.error(e.toString(),e) ;
 		}
+		log.info("leaving setInputDeviceMixer for mixer device {}",desiredMixer) ;
 	}
 
-	private void openSoundOutput(String desiredMixer) {
-		// System.out.println("Playback");
-		AudioFormat audioFormat;
-		audioFormat = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, rate, 16, /* bits per value */
-				channels, /* stereo */
-				samplebytes, /* sample size */
-				rate, false /* false=little endian */);
+	public void setOutputDevice(String desiredMixer) {
 
 		Mixer.Info[] mixers = AudioSystem.getMixerInfo();
 
-		// TargetDataLine tdl = null;
 		for (Mixer.Info mixer : mixers) {
 			if (mixer.getName().equalsIgnoreCase(desiredMixer)) {
 				// System.out.println("@@@");

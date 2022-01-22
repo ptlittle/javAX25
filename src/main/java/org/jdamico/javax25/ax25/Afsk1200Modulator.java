@@ -80,12 +80,12 @@ public class Afsk1200Modulator
 		tx_symbol_phase = tx_dds_phase = 0.0f;
 	}
 	
-	public void prepareToTransmit(Packet p) {
+	public void prepareToTransmit(Packet packet) {
 		if (tx_state != TxState.IDLE) {
 			System.err.println("Warning: trying to trasmit while Afsk1200 modulator is busy, discarding");
 			return;
 		}
-		tx_bytes = p.bytesWithCRC(); // This includes the CRC
+		tx_bytes = packet.bytesWithCRC(); // This includes the CRC
 		tx_state = TxState.PREAMBLE;
 		tx_index = (int) Math.ceil(tx_delay * 0.01 / (8.0/1200.0)); // number of flags to transmit
 		if (tx_index < 1) tx_index = 1;

@@ -23,7 +23,7 @@ package org.jdamico.javax25;
 import org.jdamico.javax25.ax25.Packet;
 import org.jdamico.javax25.ax25.PacketHandler;
 
-public class PacketHandlerImpl implements PacketHandler {
+public class PacketHandlerStdout implements PacketHandler {
 	
 	public void handlePacket(byte[] bytes) {
 		System.out.println(Packet.format(bytes));

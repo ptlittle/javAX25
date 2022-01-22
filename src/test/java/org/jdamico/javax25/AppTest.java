@@ -10,8 +10,7 @@ import org.jdamico.javax25.ax25.Afsk1200Modulator;
 import org.jdamico.javax25.ax25.Afsk1200MultiDemodulator;
 import org.jdamico.javax25.ax25.Packet;
 import org.jdamico.javax25.ax25.PacketDemodulator;
-import org.jdamico.javax25.radiocontrol.SerialTransmitController;
-import org.jdamico.javax25.radiocontrol.TransmitController;
+import org.jdamico.javax25.ax25.PacketHandler;
 import org.jdamico.javax25.soundcard.Soundcard;
 
 import junit.framework.Test;
@@ -46,22 +45,9 @@ public class AppTest extends TestCase {
 	public void testApp() {
 		Soundcard.enumerate();
 
-		Properties properties = System.getProperties();
-
-		int rate = 48000;
-		int filter_length = 32;
-
-		PacketHandlerImpl packetHandlerImpl = new PacketHandlerImpl();
-		Afsk1200Modulator modulator = null;
-		PacketDemodulator demodulator = null;
-		try {
-			demodulator = new Afsk1200MultiDemodulator(rate, packetHandlerImpl);
-			modulator = new Afsk1200Modulator(rate);
-		} catch (Exception e) {
-			System.out.println("Exception trying to create an Afsk1200 object: " + e.getMessage());
-		}
-
-		/*** create test packet to transmit ***/
+		/////////////////////////////////////////
+		// create test packet to transmit
+		/////////////////////////////////////////
 
 		String callsign = "NOCALL";
 		System.out.println("Callsign in test packet is: " + callsign);
@@ -71,39 +57,68 @@ public class AppTest extends TestCase {
 
 		System.out.println(packet.toString());
 
-		/*** write a test packet to a text file ***/
+		/////////////////////////////////////////
+		// set up modulator / demodulator
+		/////////////////////////////////////////
+
+		Properties properties = System.getProperties();
+
+		int rate = 48000;
+//		int filter_length = 32;
+
+		PacketHandler packetHandlerStdout = new PacketHandlerStdout();
+		Afsk1200Modulator modulator = null;
+		PacketDemodulator demodulator = null;
+		try {
+			demodulator = new Afsk1200MultiDemodulator(rate, packetHandlerStdout);
+			modulator = new Afsk1200Modulator(rate);
+		} catch (Exception e) {
+			System.out.println("Exception trying to create an Afsk1200 object: " + e.getMessage());
+		}
+
+		/////////////////////////////////////////
+		// write a test packet to a text file
+		/////////////////////////////////////////
 
 		String fout = System.getProperty("java.io.tmpdir") + File.separator + "japrs.txt";
+		File packetFile = new File(fout);
 		if (fout != null) {
 			System.out.printf("Writing transmit packets to <%s>\n", fout);
 			FileOutputStream f = null;
-			PrintStream ps = null;
+			PrintStream printStream = null;
 			try {
-				f = new FileOutputStream(fout);
-				ps = new PrintStream(f);
+				f = new FileOutputStream(packetFile);
+				printStream = new PrintStream(f);
 			} catch (FileNotFoundException fnfe) {
 				System.err.println("File " + fout + " not found: " + fnfe.getMessage());
-
 			}
 			modulator.prepareToTransmit(packet);
 			int n;
 			float[] tx_samples = modulator.getTxSamplesBuffer();
 			while ((n = modulator.getSamples()) > 0) {
 				for (int i = 0; i < n; i++)
-					ps.printf("%09e\n", tx_samples[i]);
+					printStream.printf("%09e\n", tx_samples[i]);
 			}
-			ps.close();
+			printStream.close();
 		}
+		// ptl: what is the file used for?
 
-		/*** preparing to generate or capture audio packets ***/
+		/////////////////////////////////////////
+		// prepare soundcard to transmit and receive tones
+		/////////////////////////////////////////
 
-		String input = null;
-		//String output = "PulseAudio Mixer" ;
-		String output = "default [default]" ;
+		// Use a patch cable to connect headphone jack to microphone
+		// There are linux solutions, too: pipe parec to virtual microphone
+		// https://stackoverflow.com/questions/51128790/linux-pipe-audio-to-virtual-microphone-using-pactl
+		// https://askubuntu.com/questions/229352/how-to-record-output-to-speakers
+
+		String audioInputFile = System.getProperty("java.io.tmpdir") + File.separator + "packet_test.ax25";
+		String microphone = "default [default]"; // microphone
+		String speakers = "default [default]"; // speakers
 
 		int buffer_size = -1;
 		try {
-			// our default is 100ms
+			// our default buffer_size is 100ms
 			buffer_size = Integer.parseInt(properties.getProperty("latency", "100").trim());
 		} catch (Exception e) {
 			System.err.println("Exception parsing buffersize " + e.toString());
@@ -111,7 +126,7 @@ public class AppTest extends TestCase {
 
 		Soundcard soundcard = null;
 		try {
-			soundcard = new Soundcard(rate, input, output, buffer_size, demodulator, modulator);
+			soundcard = new Soundcard(rate, audioInputFile, speakers, buffer_size, demodulator, modulator);
 		} catch (Exception e) {
 			log.error(e.toString(), e);
 		}
@@ -120,9 +135,19 @@ public class AppTest extends TestCase {
 			soundcard.displayAudioLevel();
 		}
 
-		/*** generate test tones and exit ***/
+		/////////////////////////////////////////
+		// start recording speakers
+		/////////////////////////////////////////
+		RecordLinuxSpeakers recordLinuxSpeakers = new RecordLinuxSpeakers();
+		try {
+			recordLinuxSpeakers.startRecording(audioInputFile);
+		} catch (Exception e) {
+			log.error(e.toString(), e);
+		}
 
-		TransmitController transmitController = null;
+		/////////////////////////////////////////
+		// transmit flags
+		/////////////////////////////////////////
 
 		int tones_duration = -1; // in seconds
 		try {
@@ -131,42 +156,81 @@ public class AppTest extends TestCase {
 			System.err.println("Exception parsing tones " + e.toString());
 		}
 		if (tones_duration > 0) {
-			// sc.openSoundOutput(output);
 			modulator.prepareToTransmitFlags(tones_duration);
 			soundcard.transmit();
 		}
 
-		/*** sound a test packet and exit ***/
+		/////////////////////////////////////////
+		// transmit data
+		/////////////////////////////////////////
 
-		if (output != null) {
-			// soundcard.openSoundOutput(output);
+		if (speakers != null) {
 			modulator.prepareToTransmit(packet);
 			System.out.printf("Start transmitter\n");
-			// soundcard.startTransmitter();
-			if (transmitController != null) {
-				transmitController.startTransmitter();
-			}
 			soundcard.transmit();
 			System.out.printf("Stop transmitter\n");
-			if (transmitController != null) {
-				transmitController.stopTransmitter();
-			}
-			if (transmitController != null) {
-				transmitController.close();
-			}
-			// if (transmitController != null) transmitController.stopTransmitter());
-			// soundcard.stopTransmitter();
-			// int n;
-			// while ((n = ae.afsk.getSamples()) > 0){
-			// ae.afsk.addSamples(Arrays.copyOf(tx_samples, n));
-			// }
+			recordLinuxSpeakers.close();
+
+//			int n;
+//			while ((n = ae.afsk.getSamples()) > 0){
+//			ae.afsk.addSamples(Arrays.copyOf(tx_samples, n));
+//			}
+
 		}
 
+		/////////////////////////////////////////
+		// soundcard receive from audioFile
+		/////////////////////////////////////////
+		soundcard.setInputDevice(audioInputFile);
+		soundcard.receive();
+		
+		
+//		/////////////////////////////////////////
+//		// listen on microphone
+//		/////////////////////////////////////////
+//		Microphone microphone = new Microphone(System.getProperties(), "microphone_main.ax25");
+//
+//		try {
+//			microphone.start();
+//			Thread.sleep(10000);
+//		} catch (Exception e) {
+//			log.error(e.toString(), e);
+//		}
+//
+//		/////////////////////////////////////////
+//		// play file
+//		/////////////////////////////////////////
+//		PlayLinuxMicrophone playLinuxMicrophone = new PlayLinuxMicrophone() ;
+//		try {
+//			playLinuxMicrophone.startPlaying(recordedSounds);
+//		} catch(Exception e) {
+//			log.error(e.toString(),e );
+//		} finally {
+//			if (null != playLinuxMicrophone) {
+//				playLinuxMicrophone.close() ;
+//			}
+//			playLinuxMicrophone = null ;
+//		}
+//
+//		/////////////////////////////////////////
+//		// stop listening
+//		/////////////////////////////////////////
+//		try {
+//			microphone.interrupt();
+//		} catch(Exception e ) {
+//			log.error(e.toString(), e);
+//		} finally {
+//			if (null != microphone) {
+//				microphone.close() ;
+//				microphone = null ;
+//			}
+//		}
+
 	}
 
-	public void testNativeLibrary() {
-		// rxtxSerial
-		SerialTransmitController.enumerate();
-	}
+//	public void testNativeLibrary() {
+//		// rxtxSerial
+//		SerialTransmitController.enumerate();
+//	}
 
 }

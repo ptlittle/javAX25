@@ -21,36 +21,39 @@
 package org.jdamico.javax25.soundcard;
 
 public abstract class SoundcardConsumer {
-	
-	int   sample_rate;
+
+	int sample_rate;
 	float peak = 0.0f;
 	float decay;
-	//private final float oneovermax = 1.0f/32768.0f;
+
+	// private final float oneovermax = 1.0f/32768.0f;
 	public SoundcardConsumer(int sample_rate) {
 		this.sample_rate = sample_rate;
-		decay = (float) ( 1.0 - Math.exp(Math.log(0.5)/(double)sample_rate) );
-		System.out.printf("decay = %e\n", (double)decay);
+		decay = (float) (1.0 - Math.exp(Math.log(0.5) / (double) sample_rate));
+		System.out.printf("decay = %e\n", (double) decay);
 
 	}
-	//public void addSamples(float[] s) {
-	//	addSamples(s,s.length);
-	//}
+	// public void addSamples(float[] s) {
+	// addSamples(s,s.length);
+	// }
 
 	protected abstract void addSamplesPrivate(float[] s, int n);
-	
+
 	public int peak() {
-		return (int) Math.ceil(peak*100.0f);
+		return (int) Math.ceil(peak * 100.0f);
 	}
 
 	public void addSamples(float[] s, int n) {
-		for (int i=0; i<n; i++) {
+		for (int i = 0; i < n; i++) {
 			float abs = s[i] >= 0 ? s[i] : -s[i];
-			if (abs > peak) peak = abs;
-			else peak = peak  - (peak * decay);
-			
-			//if (peak > 1.0f)
-			//  System.out.printf("sample=%f peak=%f decay=%f\n", abs,peak,decay);
+			if (abs > peak)
+				peak = abs;
+			else
+				peak = peak - (peak * decay);
+
+			// if (peak > 1.0f)
+			// System.out.printf("sample=%f peak=%f decay=%f\n", abs,peak,decay);
 		}
-		addSamplesPrivate(s,n);
+		addSamplesPrivate(s, n);
 	}
 }
