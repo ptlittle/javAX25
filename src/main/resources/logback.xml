@@ -26,7 +26,8 @@
         </layout>
     </appender>
 
-    <logger name="ch.qos.logback" level="TRACE" />
+    <logger name="ch.qos.logback" level="INFO" />
+    <logger name="javax.sound" level="TRACE" />
 
     <root level="${LOGLEVEL}">
         <appender-ref ref="CONSOLE"/>

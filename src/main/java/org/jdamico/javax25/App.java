@@ -13,5 +13,10 @@ public class App
     {
     	log.info("starting App");
         System.out.println( "Hello World!" );
+        
+		RoundTrip roundTrip = new RoundTrip() ;
+		
+		roundTrip.roundTrip() ;
+        
     }
 }

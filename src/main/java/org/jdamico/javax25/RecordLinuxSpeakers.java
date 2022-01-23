@@ -32,20 +32,29 @@ public class RecordLinuxSpeakers {
 			ProcessBuilder processBuilder = new ProcessBuilder(command, "-d", SPEAKER_MONITOR);
 			processBuilder.redirectOutput(outputFile);
 			process = processBuilder.start();
+
 		} catch (IOException e) {
 			log.error("Do you need to install {}?  sudo apt-get install pulseaudio-utils", command);
-			log.error(e.toString(),e);
-			throw e ;
+			log.error(e.toString(), e);
+			throw e;
+		}
+
+		if (process.isAlive()) {
+			log.debug("process is alive");
+		} else {
+			log.debug("process is not alive");
 		}
 
 	}
 
 	public void close() {
-
+		log.info("entering close") ;
 		if (null != process && process.isAlive()) {
+			log.info("destroying process") ;
 			process.destroy();
 			process = null;
 		}
+		log.info("leaving close") ;
 
 	}
 
